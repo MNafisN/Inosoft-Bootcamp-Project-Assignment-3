@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TodoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,4 +31,12 @@ Route::group([
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::get('data', [AuthController::class, 'data']);
     });
+});
+
+Route::group([
+    'prefix' => 'todo',
+    'middleware' => 'auth:api'
+], function() {
+    Route::post('add_todo', [TodoController::class, 'addTodo']);
+    Route::get('get_todo', [TodoController::class, 'getTodoList']);
 });
