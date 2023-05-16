@@ -23,6 +23,7 @@ use App\Http\Controllers\TodoController;
 Route::group([
     'prefix' => 'auth'
 ], function() {
+    Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
     Route::group([
         'middleware' => 'auth:api'
