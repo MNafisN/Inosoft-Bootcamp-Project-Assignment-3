@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AuthService;
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\User;
-use MongoDB\Exception\InvalidArgumentException;
-use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    public function __construct()
+    protected $authService;
+    
+    public function __construct(AuthService $authService)
     {
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->authService = $authService;
     }
 
     /**
@@ -21,30 +24,22 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request)
+    public function register(Request $request) : JsonResponse
     {
-        $validator = Validator::make($request->only('name', 'email', 'password'), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
+        $data = $request->only('name', 'email', 'password');
 
-        if ($validator->fails()) {
-            throw new InvalidArgumentException($validator->errors()->first());
+        try {
+            $user = $this->authService->store($data);
+            return response()->json([
+                'status' => 201,
+                'message' => 'User registered successfully',
+                'registered_user' => $user->only(['name', 'email'])
+            ], 201);
+        } catch (Exception $err) {
+            return response()->json([
+                'error' => $err->getMessage()
+            ], 422);
         }
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'email_verified_at' => time(),
-        ]);
-
-        return response()->json([
-            'status' => 201,
-            'message' => 'User created successfully',
-            'user' => $user
-        ], 201);
     }
 
     /**
@@ -58,31 +53,30 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        $validator = Validator::make($credentials, [
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            throw new InvalidArgumentException($validator->errors()->first());
-        }        
-
-        $token = auth()->attempt($credentials, true);
-
-        if (!$token) {
+        try {
+            $token = $this->authService->login($credentials);
+            if (!$token) {
+                return response()->json([
+                    'status' => 401,
+                    'error' => 'Unauthorized'
+                ], 401);
+            }
+    
             return response()->json([
-                'status' => 401,
-                'error' => 'Unauthorized'
-            ], 401);
+                'status' => 200,
+                'logged_in_user' => [
+                    'name' => auth()->user()['name'],
+                    'email' => auth()->user()['email']
+                ],
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => auth()->factory()->getTTL() * 60
+            ], 200);
+        } catch (Exception $err) {
+            return response()->json([
+                'error' => $err->getMessage()
+            ], 422);
         }
-
-        return response()->json([
-            'status' => 200,
-            'user' => auth()->user(),
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
-        ], 200);
     }
 
     /**
@@ -92,7 +86,9 @@ class AuthController extends Controller
      */
     public function data()
     {
-        return response()->json(auth()->user(), 200);
+        return response()->json([
+            'logged_in_user' => $this->authService->data()
+        ], 200);
     }
 
     /**
@@ -117,10 +113,10 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        auth()->logout();
+        $message = $this->authService->logout().' Successfully logged out';
 
         return response()->json([
-            'message' => 'Succesfully logged out'
+            'message' => $message
         ], 200);
     }
 }
