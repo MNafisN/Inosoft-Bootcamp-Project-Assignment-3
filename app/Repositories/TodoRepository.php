@@ -32,21 +32,30 @@ class TodoRepository
     }
 
     /**
-     * Untuk menyimpan data todo baru
+     * Untuk memperbarui data todo maupun menyimpan data todo baru
      */
-    public function store(array $data) : Object
-    {
-        $dataBaru = new $this->todo;
+    public function save(array $data) : Object
+    {         
+        if (array_key_exists('todo_id', $data)) {
+            $todo = $this->getById($data['todo_id']);
 
-        $dataBaru->title = $data['title'];
-        $dataBaru->description = $data['description'];
-        $dataBaru->author = auth()->user()['name'];
-        $dataBaru->assigned = null;
-        $dataBaru->created_at = time();
-        $dataBaru->updated_at = null;
-
-        $dataBaru->save();
-        return $dataBaru->fresh();
+            if (array_key_exists('title', $data)) { $todo->title = $data['title']; }
+            if (array_key_exists('description', $data)) { $todo->description = $data['description']; }            
+            if (array_key_exists('author', $data)) { $todo->author = $data['author']; }
+            if (array_key_exists('assigned', $data)) { $todo->assigned = $data['assigned']; }
+            $todo->updated_at = time();    
+        } else {
+            $todo = new $this->todo;
+            
+            $todo->title = $data['title'];
+            $todo->description = $data['description'];
+            $todo->author = auth()->user()['name'];
+            $todo->assigned = null;
+            $todo->created_at = time();
+            $todo->updated_at = null;
+        }
+        $todo->save();
+        return $todo->fresh();
     }
 
     /**

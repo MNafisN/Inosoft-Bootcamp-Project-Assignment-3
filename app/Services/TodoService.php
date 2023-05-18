@@ -40,7 +40,7 @@ class TodoService {
             throw new InvalidArgumentException($validator->errors()->first());
         }
 
-        $dataBaru = $this->todoRepository->store($data);
+        $dataBaru = $this->todoRepository->save($validator->validated());
         return $dataBaru;
     }
 
@@ -49,16 +49,24 @@ class TodoService {
      */
     public function update(array $formData) : Object
     {
+        $todo = $this->todoRepository->getById($formData['todo_id']);
+        if (!$todo) {
+            throw new InvalidArgumentException('Data tidak ditemukan');
+        }
+
         $validator = Validator::make($formData, [
-            'title' => 'required|max:32',
-            'description' => 'max:256'
+            'todo_id' => 'required|string',
+            'title' => 'sometimes|required|string|max:32|min:3',
+            'description' => 'sometimes|required|string|max:255|nullable',
+            'author' => 'sometimes|required|string',
+            'assigned' => 'sometimes|required|string'
         ]);
 
         if ($validator->fails()) {
             throw new InvalidArgumentException($validator->errors()->first());
         }
 
-        $result = $this->todoRepository->store($formData);
+        $result = $this->todoRepository->save($validator->validated());
         return $result;
     }
 

@@ -40,6 +40,7 @@ Route::group([
 ], function() {
     Route::post('add_todo', [TodoController::class, 'addTodo']);
     Route::get('get_todo', [TodoController::class, 'getTodoList']);
+    Route::post('update_todo', [TodoController::class, 'updateTodo']);
     Route::post('delete_todo', [TodoController::class, 'deleteTodo']);
 });
 

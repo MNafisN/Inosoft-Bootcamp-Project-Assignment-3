@@ -18,7 +18,7 @@ class TodoController extends Controller
     }
 
     /**
-     * Show todo list
+     * Show TODO list
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -39,7 +39,14 @@ class TodoController extends Controller
         return response()->json($result, $result['status']);
     }
 
-    public function addTodo(Request $request)
+    /**
+     * Add a new TODO
+     *
+     * @param  \Illuminate\Http\Request  $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function addTodo(Request $request) : JsonResponse
     {
         $data = $request->all();
 
@@ -58,7 +65,40 @@ class TodoController extends Controller
         }
     }
 
-    public function deleteTodo(Request $request)
+    /**
+     * Update an existing TODO
+     *
+     * @param  \Illuminate\Http\Request  $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateTodo(Request $request) : JsonResponse
+    {
+        $data = $request->all();
+
+        try {
+            $todo = $this->todoService->update($data);
+            return response()->json([
+                'status' => 201,
+                'message' => 'Todo updated successfully',
+                'todo' => $todo
+            ], 201);
+        } catch (Exception $err) {
+            return response()->json([
+                'status' => 422,
+                'error' => $err->getMessage()
+            ], 422);
+        }
+    }
+
+    /**
+     * Delete an existing TODO
+     *
+     * @param  \Illuminate\Http\Request  $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteTodo(Request $request) : JsonResponse
     {
         $data = $request->all();
 
