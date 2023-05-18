@@ -49,7 +49,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request)
+    public function login(Request $request) : JsonResponse
     {
         $credentials = $request->only('email', 'password');
 
@@ -84,7 +84,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function data()
+    public function data() : JsonResponse
     {
         return response()->json([
             'logged_in_user' => $this->authService->data()
@@ -97,7 +97,7 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function refresh()
+    public function refresh() : JsonResponse
     {
         return response()->json([
             'access_token' => auth()->refresh(),
@@ -111,7 +111,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function logout()
+    public function logout() : JsonResponse
     {
         $message = $this->authService->logout().' Successfully logged out';
 

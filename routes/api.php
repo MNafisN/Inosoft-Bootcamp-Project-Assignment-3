@@ -40,4 +40,11 @@ Route::group([
 ], function() {
     Route::post('add_todo', [TodoController::class, 'addTodo']);
     Route::get('get_todo', [TodoController::class, 'getTodoList']);
+    Route::post('delete_todo', [TodoController::class, 'deleteTodo']);
 });
+
+/**
+ * Catatan untuk ditanyakan: Mengapa tidak bisa mengirimkan Request ke sebuah Route API 
+ * yang menggunakan metode DELETE? (request kosong jika dites dump & destroy di controller)
+ * Testing dilakukan dari postman metode delete yang sudah dilengkapi form data dari Body
+*/

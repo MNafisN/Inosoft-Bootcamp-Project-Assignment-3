@@ -23,20 +23,37 @@ class TodoRepository
     }
 
     /**
+     * Untuk mengambil data todo berdasarkan id
+     */
+    public function getById(string $id) : ?Object
+    {
+        $todo = $this->todo->where('_id', $id)->first();
+        return $todo;
+    }
+
+    /**
      * Untuk menyimpan data todo baru
      */
-    public function store($data) : Object
+    public function store(array $data) : Object
     {
         $dataBaru = new $this->todo;
 
         $dataBaru->title = $data['title'];
         $dataBaru->description = $data['description'];
+        $dataBaru->author = auth()->user()['name'];
         $dataBaru->assigned = null;
-        $dataBaru->todo_subtasks = [];
         $dataBaru->created_at = time();
         $dataBaru->updated_at = null;
 
         $dataBaru->save();
         return $dataBaru->fresh();
+    }
+
+    /**
+     * Untuk menghapus data todo berdasarkan id
+     */
+    public function delete(string $id) : void
+    {
+        $this->todo->destroy($id);
     }
 }

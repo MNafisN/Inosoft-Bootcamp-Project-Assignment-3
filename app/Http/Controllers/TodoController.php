@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\TodoService;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TodoController extends Controller
@@ -16,7 +17,12 @@ class TodoController extends Controller
         $this->todoService = $todoService;
     }
 
-    public function getTodoList()
+    /**
+     * Show todo list
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTodoList() : JsonResponse
     {
         try {
             $result = [
@@ -35,23 +41,38 @@ class TodoController extends Controller
 
     public function addTodo(Request $request)
     {
-        $data = $request->only([
-            'title',
-            'description'
-        ]);
+        $data = $request->all();
 
         try {
-            $result = [
+            $todo = $this->todoService->store($data);
+            return response()->json([
                 'status' => 201,
-                'data' => $this->todoService->store($data)
-            ];
+                'message' => 'Todo added successfully',
+                'new_todo' => $todo
+            ], 201);
         } catch (Exception $err) {
-            $result = [
+            return response()->json([
                 'status' => 422,
                 'error' => $err->getMessage()
-            ];
+            ], 422);
         }
+    }
 
-        return response()->json($result, $result['status']);
+    public function deleteTodo(Request $request)
+    {
+        $data = $request->all();
+
+        try {
+            $todo = $this->todoService->delete($data['todo_id']);
+            return response()->json([
+                'status' => 200,
+                'message' => $todo." Deleted successfully"
+            ]);
+        } catch (Exception $err) {
+            return response()->json([
+                'status' => 422,
+                'error' => $err->getMessage()
+            ], 422);
+        }
     }
 }

@@ -21,9 +21,9 @@ class AuthService
      */
     public function getAll() : ?Object
     {
-        $todos = $this->authRepository->getAll();
-        $todo = $todos->isEmpty() ? null : $todos;
-        return $todo;
+        $users = $this->authRepository->getAll();
+        $user = $users->isEmpty() ? null : $users;
+        return $user;
     }
 
     /**
